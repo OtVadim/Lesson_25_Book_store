@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <div>
+        <h1>Электронная библиотека</h1>
+        <h2>Добавление книги</h2>
+        <form class="add-book-form">
+          <input
+            type="text"
+            value=""
+            class="book-author-input"
+            placeholder="Автор книги"
+          />
+          <input
+            type="text"
+            value=""
+            class="book-title-input"
+            placeholder="Название книги"
+          />
+          <button type="submit">Добавить</button>
+        </form>
+      </div>
+  
+      <h2>Список книг</h2>
+      <div class="books-list"></div>
+  
+      <div class="modal update-book-modal">
+        <div>
+          <h2>Редактирование книги</h2>
+          <form class="update-book-form">
+            <input type="hidden" value="" class="book-id-input" />
+            <input
+              type="text"
+              value=""
+              class="book-author-input"
+              placeholder="Автор книги"
+            />
+            <input
+              type="text"
+              value=""
+              class="book-title-input"
+              placeholder="Название книги"
+            />
+            <button type="submit">Обновить</button>
+            <button type="button" class="cancel-button">Отмена</button>
+          </form>
+        </div>
+      </div>
+  
+      <script>
+          
+        const apiUrl = 'https://nordic-books-api.herokuapp.com'
+  
+        const booksList = document.querySelector('.books-list')
+  
+        const addBookForm = document.querySelector('.add-book-form')
+        const addBookTitleInput = addBookForm.querySelector('.book-title-input')
+        const addBookAuthorInput = addBookForm.querySelector('.book-author-input')
+  
+        const updateBookModal = document.querySelector('.update-book-modal')
+        const updateBookForm = document.querySelector('.update-book-form')
+        const updateBookIdInput = updateBookForm.querySelector('.book-id-input')
+        const updateBookTitleInput =
+          updateBookForm.querySelector('.book-title-input')
+        const updateBookAuthorInput =
+          updateBookForm.querySelector('.book-author-input')
+        const updateBookCancelButton =
+          updateBookForm.querySelector('.cancel-button')
+  
+        function getBooksData() {
+          return fetch(`${apiUrl}/books`).then((res) => res.json())
+        }
+  
+        function updateBooksList() {
+          getBooksData().then((books) => {
+            if (!Array.isArray(books)) {
+              return
+            }
+  
+            booksList.textContent = ''
+            books.forEach((book) => {
+              const bookEl = document.createElement('div')
+              bookEl.classList.add('book-item')
+  
+              const authorDiv = document.createElement('div')
+              authorDiv.textContent = book.author
+  
+              const titleDiv = document.createElement('div')
+              titleDiv.textContent = book.title
+  
+              const removeButton = document.createElement('button')
+              removeButton.textContent = 'Удалить'
+              removeButton.classList.add('book-item-delete')
+              removeButton.dataset.bookId = book._id
+  
+              const editButton = document.createElement('button')
+              editButton.textContent = 'Редактировать'
+              editButton.classList.add('book-item-edit')
+              editButton.dataset.bookId = book._id
+              editButton.dataset.bookAuthor = book.author
+              editButton.dataset.bookTitle = book.title
+  
+              bookEl.append(authorDiv, titleDiv, removeButton, editButton)
+  
+              booksList.prepend(bookEl)
+            })
+          })
+        }
+  
+        updateBooksList()
+  
+        addBookForm.addEventListener('submit', (event) => {
+          event.preventDefault()
+  
+          const author = addBookAuthorInput.value
+          const title = addBookTitleInput.value
+  
+          fetch(`${apiUrl}/books`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              author,
+              title,
+            }),
+          })
+            .then((res) => res.json())
+            .then((data) => {
+              updateBooksList()
+              addBookTitleInput.value = ''
+              addBookAuthorInput.value = ''
+            })
+        })
+  
+       
+        booksList.addEventListener('click', (event) => {
+          if (!event.target.classList.contains('book-item-delete')) {
+            return
+          }
+  
+          const bookId = event.target.dataset.bookId
+          fetch(`${apiUrl}/books/${bookId}`, {
+            method: 'DELETE',
+          }).then(() => {
+            updateBooksList()
+          })
+        })
+  
+        booksList.addEventListener('click', (event) => {
+          if (!event.target.classList.contains('book-item-edit')) {
+            return
+          }
+  
+          updateBookModal.style.visibility = 'visible'
+  
+          updateBookIdInput.value = event.target.dataset.bookId
+          updateBookAuthorInput.value = event.target.dataset.bookAuthor
+          updateBookTitleInput.value = event.target.dataset.bookTitle
+        })
+  
+        updateBookForm.addEventListener('submit', (event) => {
+          event.preventDefault()
+  
+          const bookId = updateBookIdInput.value
+          const author = updateBookAuthorInput.value
+          const title = updateBookTitleInput.value
+  
+          fetch(`http://localhost:3000/books/${bookId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              author,
+              title,
+            }),
+          })
+            .then((res) => res.json())
+            .then((data) => {
+              updateBooksList()
+  
+              closeUpdateModal()
+            })
+        })
+  
+        function closeUpdateModal() {
+          updateBookAuthorInput.value = ''
+          updateBookTitleInput.value = ''
+          updateBookIdInput.value = ''
+  
+          updateBookModal.style.visibility = 'hidden'
+        }
+  
+        updateBookCancelButton.addEventListener('click', closeUpdateModal)
+        
+      </script>
+</body>
+</html>
