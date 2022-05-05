@@ -5,11 +5,12 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <style src="style.css"></style>
 </head>
 <body>
     <div>
-        <h1>Электронная библиотека</h1>
-        <h2>Добавление книги</h2>
+        <h1>Digital Library</h1>
+        <h2>Add Book</h2>
         <form class="add-book-form">
           <input
             type="text"
@@ -23,13 +24,15 @@
             class="book-title-input"
             placeholder="Название книги"
           />
-          <button type="submit">Добавить</button>
+          <button type="submit">Add to List</button>
+          
         </form>
+
+        <h2>Book List</h2>
+          <div class="books-list"></div>
+
       </div>
-  
-      <h2>Список книг</h2>
-      <div class="books-list"></div>
-  
+      <!--
       <div class="modal update-book-modal">
         <div>
           <h2>Редактирование книги</h2>
@@ -51,42 +54,28 @@
             <button type="button" class="cancel-button">Отмена</button>
           </form>
         </div>
-      </div>
-  
+      </div> -->
       <script>
-          
-        const apiUrl = 'https://nordic-books-api.herokuapp.com'
-  
-        const booksList = document.querySelector('.books-list')
-  
-        const addBookForm = document.querySelector('.add-book-form')
-        const addBookTitleInput = addBookForm.querySelector('.book-title-input')
-        const addBookAuthorInput = addBookForm.querySelector('.book-author-input')
-  
-        const updateBookModal = document.querySelector('.update-book-modal')
-        const updateBookForm = document.querySelector('.update-book-form')
-        const updateBookIdInput = updateBookForm.querySelector('.book-id-input')
-        const updateBookTitleInput =
-          updateBookForm.querySelector('.book-title-input')
-        const updateBookAuthorInput =
-          updateBookForm.querySelector('.book-author-input')
-        const updateBookCancelButton =
-          updateBookForm.querySelector('.cancel-button')
-  
-        function getBooksData() {
+          const apiUrl = 'https://nordic-books-api.herokuapp.com'
+          const booksList = document.querySelector('.books-list')
+          const addBookForm = document.querySelector('.add-book-form')
+          const updateBookForm = document.querySelector('.update-book-form')
+
+          function getBooksData() {
           return fetch(`${apiUrl}/books`)
           .then((res) => res.json()
           .then((res) => console.log(res)))
-        }
-  
+        };
+
+        booksList.textContent = ''
+
         function updateBooksList() {
           getBooksData().then((books) => {
             if (!Array.isArray(books)) {
               return
             }
-  
-            booksList.textContent = ''
-            books.forEach((book) => {
+        
+        books.forEach((book) => {
               const bookEl = document.createElement('div')
               bookEl.classList.add('book-item')
   
@@ -95,28 +84,31 @@
   
               const titleDiv = document.createElement('div')
               titleDiv.textContent = book.title
-  
+              
               const removeButton = document.createElement('button')
               removeButton.textContent = 'Удалить'
               removeButton.classList.add('book-item-delete')
               removeButton.dataset.bookId = book._id
-  
+
               const editButton = document.createElement('button')
               editButton.textContent = 'Редактировать'
               editButton.classList.add('book-item-edit')
               editButton.dataset.bookId = book._id
               editButton.dataset.bookAuthor = book.author
               editButton.dataset.bookTitle = book.title
+              
   
               bookEl.append(authorDiv, titleDiv, removeButton, editButton)
   
               booksList.prepend(bookEl)
             })
-          })
-        }
-  
+            
+        })};
+
+
+        getBooksData()
         updateBooksList()
-  
+
         addBookForm.addEventListener('submit', (event) => {
           event.preventDefault()
   
@@ -138,8 +130,7 @@
               addBookAuthorInput.value = ''
             })
         })
-  
-       
+
         booksList.addEventListener('click', (event) => {
           if (!event.target.classList.contains('book-item-delete')) {
             return
@@ -152,7 +143,7 @@
             updateBooksList()
           })
         })
-  
+
         booksList.addEventListener('click', (event) => {
           if (!event.target.classList.contains('book-item-edit')) {
             return
@@ -164,7 +155,7 @@
           updateBookAuthorInput.value = event.target.dataset.bookAuthor
           updateBookTitleInput.value = event.target.dataset.bookTitle
         })
-  
+        /*
         updateBookForm.addEventListener('submit', (event) => {
           event.preventDefault()
   
@@ -186,8 +177,8 @@
   
               closeUpdateModal()
             })
-        })
-  
+        }) */
+
         function closeUpdateModal() {
           updateBookAuthorInput.value = ''
           updateBookTitleInput.value = ''
@@ -196,8 +187,8 @@
           updateBookModal.style.visibility = 'hidden'
         }
   
-        updateBookCancelButton.addEventListener('click', closeUpdateModal)
-        
+        //updateBookCancelButton.addEventListener('click', closeUpdateModal)
+
       </script>
 </body>
 </html>
